@@ -1,0 +1,22 @@
+.add-pages-error {
+    display: flex;
+    padding: 20px;
+    background: #f2dede;
+    border: 1px solid #ebccd1;
+    vertical-align: center;
+    color: #a94442;
+}
+
+.add-pages-success {
+    display: flex;
+    padding: 20px;
+    background: #dff0d8;
+    border: 1px solid #d6e9c6;
+    vertical-align: center;
+    color: #3c763d;
+}
+
+.add-pages-success ul,
+.add-pages-error ul {
+    margin: 0;
+}

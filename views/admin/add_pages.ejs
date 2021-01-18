@@ -1,4 +1,6 @@
+<!-- _______________________ Import header _______________________-->
 <%- include ('../_layouts/adminheader') %>
+
 
 
 
@@ -12,6 +14,19 @@
 <br><br>
 
 
+<!-- _________________________________ Flash Message ___________________________________________ -->
+
+<% if (message) { %>
+<div class="alert alert-<%= message.type %> alert-dismissible fade show" role="alert">
+    <% message.errorArray.forEach((error) => { %>
+    <li><%= error %></li>
+    <% }); %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+
+<!-- _________________________________ Add Pages Form ___________________________________________ -->
 
 <form method="post" action="/admin/pages/add-pages">
     <div class="mb-4">
@@ -38,6 +53,5 @@
 
 
 
-
-
+<!-- _______________________ Import Footer _______________________-->
 <%- include ('../_layouts/adminfooter') %>
