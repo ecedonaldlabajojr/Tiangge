@@ -7,27 +7,26 @@ const {
 
 
 // ________________ Get Pages Model ________________
-const Page = require("../models/page");
+const Category = require('../models/categories');
 
 
 // ________________ Routes ________________
 router.get('/', (req, res) => {
-    Page.find({}).sort({
-        title: 'asc'
-    }).exec((err, pagesFound) => {
-        res.render("admin/pages", {
-            pages: pagesFound
-        });
-    });
+    Category.find({}, (err, categories) => {
+        res.render("admin/categories", {
+            categories: categories
+        })
+    })
+});
+
+
+
+router.get('/add-category', (req, res) => {
+    res.render("admin/add_category")
 })
 
-router.get('/add-pages', (req, res) => {
-    res.render("admin/add_pages")
-})
-
-router.post('/add-pages', [
-    body('title').not().isEmpty().withMessage("Please provided a title."),
-    body('content', "Content cannot be empty.").not().isEmpty(),
+router.post('/add-category', [
+    body('title').not().isEmpty().withMessage("Please provide a title."),
 ], (req, res) => {
     // Validate Form for errors
     const errors = validationResult(req);
@@ -40,37 +39,35 @@ router.post('/add-pages', [
         errorArray.push(String(error.msg));
     })
 
-    Page.findOne({
+    Category.findOne({
         title: req.body.title
-    }, (err, foundPage) => {
+    }, (err, foundCategory) => {
         if (errorArray.length === 0) {
             if (!err) {
-                if (!foundPage) {
+                if (!foundCategory) {
                     let slugVal = req.body.slug;
                     if (req.body.slug === "") {
                         slugVal = req.body.title
                     }
-                    let newPage = new Page({
+                    let newCategory = new Category({
                         title: req.body.title,
                         slug: slugVal,
-                        content: req.body.content,
-                        sorting: 100
                     });
-                    newPage.save();
-                    errorArray.push('Successfully added page.')
+                    newCategory.save();
+                    errorArray.push('Successfully added category.')
                     setLocalsMsg('success', errorArray);
-                    res.redirect('/admin/pages/add-pages');
+                    res.redirect('/admin/categories/add-category');
                 } else {
-                    errorArray.push("Page Title Already exists. Try again.");
+                    errorArray.push("Category Title Already exists. Try again.");
                     setLocalsMsg('danger', errorArray)
-                    res.redirect('/admin/pages/add-pages');
+                    res.redirect('/admin/categories/add-category');
                 }
             } else {
                 console.log(err);
             }
         } else {
             setLocalsMsg('danger', errorArray)
-            res.redirect('/admin/pages/add-pages');
+            res.redirect('/admin/categories/add-category');
         }
     });
 
@@ -83,17 +80,17 @@ router.post('/add-pages', [
     }
 });
 
-router.get('/edit-page/:pageSlug', (req, res) => {
-    Page.findOne({
-        slug: req.params.pageSlug
-    }, (err, foundPage) => {
+router.get('/edit-category/:categorySlug', (req, res) => {
+    Category.findOne({
+        slug: req.params.categorySlug
+    }, (err, foundCategory) => {
         if (!err) {
-            if (foundPage) {
-                res.render("admin/edit_page", {
-                    page: foundPage
+            if (foundCategory) {
+                res.render("admin/edit_category", {
+                    category: foundCategory
                 });
             } else {
-                console.log("No Page found.");
+                console.log("No Category found.");
             }
         } else {
             console.log(err);
@@ -101,14 +98,13 @@ router.get('/edit-page/:pageSlug', (req, res) => {
     })
 })
 
-router.post('/edit-page/:pageSlug', (req, res) => {
-    Page.findOneAndUpdate({
+router.post('/edit-category/:categorySlug', (req, res) => {
+    Category.findOneAndUpdate({
         _id: req.body.page_id
     }, {
         $set: {
             title: req.body.title,
             slug: req.body.slug,
-            content: req.body.content
         }
     }, (err) => {
         if (!err) {
@@ -116,23 +112,23 @@ router.post('/edit-page/:pageSlug', (req, res) => {
                 type: 'success',
                 errorArray: ['Edit successful!']
             }
-            res.redirect('/admin/pages');
+            res.redirect('/admin/categories');
         }
     });
 })
 
 
-router.get('/delete-page/:page_id', (req, res) => {
-    Page.findByIdAndDelete(req.params.page_id, (err) => {
-        if (err) {
-            return console.log(err);
-        } else {
-            req.session.message = {
-                type: 'success',
-                errorArray: ['Successfully deleted page.']
-            }
-            res.redirect('/admin/pages');
-        }
-    })
-});
+// router.get('/delete-page/:page_id', (req, res) => {
+//     Page.findByIdAndDelete(req.params.page_id, (err) => {
+//         if (err) {
+//             return console.log(err);
+//         } else {
+//             req.session.message = {
+//                 type: 'success',
+//                 errorArray: ['Successfully deleted page.']
+//             }
+//             res.redirect('/admin/pages');
+//         }
+//     })
+// });
 module.exports = router;

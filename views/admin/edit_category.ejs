@@ -1,0 +1,34 @@
+<!-- _______________________ Import header _______________________-->
+<%- include ('../_layouts/adminheader') %>
+
+
+<div class="jumbotron jumbotron-fluid mt-4">
+    <h1 class="display-4">Edit Page</h1>
+</div>
+<hr>
+<a class="btn btn-primary btn-lg mt-4" href="/admin/categories">Back to all categories</a>
+<br><br>
+
+
+
+<!-- _________________________________ Edit Pages Form ___________________________________________ -->
+
+<form method="post" action="<%= category.slug %>">
+    <div class="mb-4">
+        <label for="title">Title:</label>
+        <input type="text" id="title" class="form-control" name="title" value="<%= category.title %>">
+    </div>
+
+    <div class="mb-4">
+        <label for="slug">Slug:</label>
+        <input type="text" id="slug" class="form-control" name="slug" value="<%= category.slug%>">
+    </div>
+
+    <div class="mb-4">
+        <input type="hidden" name="page_id" value="<%= category._id %>">
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </div>
+</form>
+
+<!-- _______________________ Import Footer _______________________-->
+<%- include ('../_layouts/adminfooter') %>

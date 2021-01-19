@@ -1,0 +1,52 @@
+<!-- _______________________ Import header _______________________-->
+<%- include ('../_layouts/adminheader') %>
+
+
+
+<div class="jumbotron jumbotron-fluid mt-4">
+    <h1 class="display-4">Categories</h1>
+</div>
+<hr>
+<a class="btn btn-primary btn-lg mt-4" href="/admin/categories/add-category">Add a new category</a>
+<br><br>
+
+<!-- _________________________________ Flash Message ___________________________________________ -->
+
+<% if (message) { %>
+<div class="alert alert-<%= message.type %> alert-dismissible fade show" role="alert">
+    <% message.errorArray.forEach((error) => { %>
+    <li><%= error %></li>
+    <% }); %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col" colspan="2" class="text-center">Action</th>
+            <!-- <th scope="col">Delete</th> -->
+        </tr>
+    </thead>
+    <tbody>
+        <% categories.forEach((category) => { %>
+        <tr>
+            <td><%= category.title %></td>
+            <td class="text-center"><a href="/admin/categories/edit-category/<%= category.slug %>">Edit</a></td>
+            <% if (category.slug === "Home") { %>
+            <td></td>
+            <% } else { %>
+            <td class="text-center delete-btn"><a
+                    href="/admin/categories/delete-category/<%= category._id %>">Delete</a>
+            </td>
+            <% } %>
+        </tr>
+        <% }) %>
+    </tbody>
+</table>
+
+
+
+<!-- _______________________ Import Footer _______________________-->
+<%- include ('../_layouts/adminfooter') %>

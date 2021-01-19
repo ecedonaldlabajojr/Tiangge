@@ -45,9 +45,11 @@ app.set('view engine', 'ejs');
 // _______________________ Set Router _______________________
 const pages = require('./routes/pages');
 const adminPages = require('./routes/admin_pages');
+const adminCategories = require('./routes/admin_categories');
 
 app.use('/', pages);
 app.use('/admin/pages', adminPages);
+app.use('/admin/categories', adminCategories);
 
 
 

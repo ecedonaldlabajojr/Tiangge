@@ -1,0 +1,50 @@
+<!-- _______________________ Import header _______________________-->
+<%- include ('../_layouts/adminheader') %>
+
+
+
+<div class="jumbotron jumbotron-fluid mt-4">
+    <h1 class="display-4">Pages</h1>
+</div>
+<hr>
+<a class="btn btn-primary btn-lg mt-4" href="pages/add-pages">Add a new page</a>
+<br><br>
+
+<!-- _________________________________ Flash Message ___________________________________________ -->
+
+<% if (message) { %>
+<div class="alert alert-<%= message.type %> alert-dismissible fade show" role="alert">
+    <% message.errorArray.forEach((error) => { %>
+    <li><%= error %></li>
+    <% }); %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col" colspan="2" class="text-center">Action</th>
+            <!-- <th scope="col">Delete</th> -->
+        </tr>
+    </thead>
+    <tbody>
+        <% pages.forEach((page) => { %>
+        <tr>
+            <td><%= page.title %></td>
+            <td class="text-center"><a href="/admin/pages/edit-page/<%= page.slug %>">Edit</a></td>
+            <% if (page.slug === "Home") { %>
+            <td></td>
+            <% } else { %>
+            <td class="text-center delete-page"><a href="/admin/pages/delete-page/<%= page._id %>">Delete</a></td>
+            <% } %>
+        </tr>
+        <% }) %>
+    </tbody>
+</table>
+
+
+
+<!-- _______________________ Import Footer _______________________-->
+<%- include ('../_layouts/adminfooter') %>
