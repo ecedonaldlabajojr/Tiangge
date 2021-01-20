@@ -9,10 +9,12 @@ const {
     body,
     validationResult
 } = require('express-validator');
+const fileUpload = require('express-fileupload');
 
 
 // _______________________ Initialize App _______________________
 const app = express();
+
 
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.urlencoded({
@@ -28,6 +30,7 @@ app.use(session({
         maxAge: null,
     }
 }));
+app.use(fileUpload());
 
 // _______________________ Flash-message middleware _______________________
 app.use((req, res, next) => {
@@ -46,10 +49,12 @@ app.set('view engine', 'ejs');
 const pages = require('./routes/pages');
 const adminPages = require('./routes/admin_pages');
 const adminCategories = require('./routes/admin_categories');
+const adminProducts = require('./routes/admin_products');
 
 app.use('/', pages);
 app.use('/admin/pages', adminPages);
 app.use('/admin/categories', adminCategories);
+app.use('/admin/products', adminProducts);
 
 
 
@@ -83,34 +88,6 @@ const itemSchema = mongoose.Schema({
 
 const Item = new mongoose.model("Item", itemSchema);
 
-
-
-
-
-// _______________________ Setup Express-Validator on POST request _______________________
-app.post(
-    '/user',
-    // username must be an email
-    body('username').isEmail(),
-    // password must be at least 5 chars long
-    body('password').isLength({
-        min: 5
-    }),
-    (req, res) => {
-        // Finds the validation errors in this request and wraps them in an object with handy functions
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                errors: errors.array()
-            });
-        }
-
-        User.create({
-            username: req.body.username,
-            password: req.body.password,
-        }).then(user => res.json(user));
-    },
-);
 
 
 

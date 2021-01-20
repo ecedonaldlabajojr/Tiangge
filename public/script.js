@@ -5,7 +5,7 @@ $(document).ready(() => {
 
 
     $('.delete-btn').on('click', () => {
-        if (confirm("Delete page?")) {
+        if (confirm("Confirm delete?")) {
             return true;
         } else {
             return false;

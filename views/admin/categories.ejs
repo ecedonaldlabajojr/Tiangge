@@ -26,21 +26,16 @@
         <tr>
             <th scope="col">Title</th>
             <th scope="col" colspan="2" class="text-center">Action</th>
-            <!-- <th scope="col">Delete</th> -->
         </tr>
     </thead>
     <tbody>
         <% categories.forEach((category) => { %>
         <tr>
             <td><%= category.title %></td>
-            <td class="text-center"><a href="/admin/categories/edit-category/<%= category.slug %>">Edit</a></td>
-            <% if (category.slug === "Home") { %>
-            <td></td>
-            <% } else { %>
+            <td class="text-center"><a href="/admin/categories/edit-category/<%= category.id %>">Edit</a></td>
             <td class="text-center delete-btn"><a
                     href="/admin/categories/delete-category/<%= category._id %>">Delete</a>
             </td>
-            <% } %>
         </tr>
         <% }) %>
     </tbody>

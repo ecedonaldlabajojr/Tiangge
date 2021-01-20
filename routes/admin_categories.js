@@ -6,7 +6,7 @@ const {
 } = require('express-validator');
 
 
-// ________________ Get Pages Model ________________
+// ________________ Get Categories Model ________________
 const Category = require('../models/categories');
 
 
@@ -45,10 +45,7 @@ router.post('/add-category', [
         if (errorArray.length === 0) {
             if (!err) {
                 if (!foundCategory) {
-                    let slugVal = req.body.slug;
-                    if (req.body.slug === "") {
-                        slugVal = req.body.title
-                    }
+                    slugVal = req.body.title
                     let newCategory = new Category({
                         title: req.body.title,
                         slug: slugVal,
@@ -80,10 +77,8 @@ router.post('/add-category', [
     }
 });
 
-router.get('/edit-category/:categorySlug', (req, res) => {
-    Category.findOne({
-        slug: req.params.categorySlug
-    }, (err, foundCategory) => {
+router.get('/edit-category/:categoryId', (req, res) => {
+    Category.findById(req.params.categoryId, (err, foundCategory) => {
         if (!err) {
             if (foundCategory) {
                 res.render("admin/edit_category", {
@@ -98,13 +93,13 @@ router.get('/edit-category/:categorySlug', (req, res) => {
     })
 })
 
-router.post('/edit-category/:categorySlug', (req, res) => {
+router.post('/edit-category/:categoryId', (req, res) => {
     Category.findOneAndUpdate({
-        _id: req.body.page_id
+        _id: req.params.categoryId
     }, {
         $set: {
             title: req.body.title,
-            slug: req.body.slug,
+            slug: req.body.title,
         }
     }, (err) => {
         if (!err) {
@@ -118,17 +113,17 @@ router.post('/edit-category/:categorySlug', (req, res) => {
 })
 
 
-// router.get('/delete-page/:page_id', (req, res) => {
-//     Page.findByIdAndDelete(req.params.page_id, (err) => {
-//         if (err) {
-//             return console.log(err);
-//         } else {
-//             req.session.message = {
-//                 type: 'success',
-//                 errorArray: ['Successfully deleted page.']
-//             }
-//             res.redirect('/admin/pages');
-//         }
-//     })
-// });
+router.get('/delete-category/:categoryId', (req, res) => {
+    Category.findByIdAndDelete(req.params.categoryId, (err) => {
+        if (err) {
+            return console.log(err);
+        } else {
+            req.session.message = {
+                type: 'success',
+                errorArray: ['Successfully deleted category.']
+            }
+            res.redirect('/admin/categories');
+        }
+    })
+});
 module.exports = router;

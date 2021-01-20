@@ -1,0 +1,66 @@
+<!-- _______________________ Import header _______________________-->
+<%- include ('../_layouts/adminheader') %>
+
+
+
+<div class="jumbotron jumbotron-fluid mt-4">
+    <h1 class="display-4">Products</h1>
+</div>
+<hr>
+<a class="btn btn-primary btn-lg mt-4" href="products/add-product">Add a new product</a>
+<br><br>
+
+<!-- _________________________________ Flash Message ___________________________________________ -->
+
+<% if (message) { %>
+<div class="alert alert-<%= message.type %> alert-dismissible fade show" role="alert">
+    <% message.errorArray.forEach((error) => { %>
+    <li><%= error %></li>
+    <% }); %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col" class="text-center">Image</th>
+            <th scope="col" class="text-center">Description</th>
+            <th scope="col" class="text-center">Category</th>
+            <th scope="col" class="text-center">Price</th>
+            <th scope="col" colspan="2" class="text-center">Action</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        <% if (productCount && productCount > 0) { %>
+        <% products.forEach((product) => { %>
+        <tr>
+            <td class="align-middle"><%= product.name %></td>
+            <% if (product.image === "") { %>
+            <td class="text-center align-middle"><img src="/images/no-img.png" alt="" border='0' height='100'
+                    width='100'></td>
+            <% } else { %>
+            <td class="text-center align-middle"><%= product.image %></td>
+            <% } %>
+            <td class="text-center align-middle"><%= product.description %></td>
+            <td class="text-center align-middle"><%= product.category %></td>
+
+            <td class="text-center align-middle">₱ <%= parseFloat(product.price).toFixed(2) %></td>
+            <td class="text-center align-middle"><a href="/admin/products/edit-product/<%= product._id %>">Edit</a></td>
+            <td class="text-center align-middle delete-page"><a
+                    href="/admin/products/delete-product/<%= product._id %>">Delete</a></td>
+        </tr>
+        <% }) %>
+        <% } else { %>
+        <h3 class="text-center"> There are no products.</h3>
+        <% } %>
+    </tbody>
+</table>
+
+
+
+<!-- _______________________ Import Footer _______________________-->
+<%- include ('../_layouts/adminfooter') %>
