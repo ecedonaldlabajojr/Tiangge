@@ -7,6 +7,7 @@ const {
 const mkdirp = require('mkdirp')
 const fse = require('fs-extra');
 const resizeImg = require('resize-img');
+const imgExtensionValidate = require('../util/img-extens-validate');
 
 
 // ________________ Get Products Model ________________
@@ -49,128 +50,236 @@ router.get('/add-product', (req, res) => {
     })
 })
 
-router.post('/add-product', [
-    body('title').not().isEmpty().withMessage("Please provide a title."),
+router.post('/add-product', [body('name').not().isEmpty().withMessage("Please provide a product name."),
     body('price').isFloat().withMessage("Please provide valid price."),
     body('description').not().isEmpty().withMessage("Please provide product description"),
-    body('image').custom(() => {
-        let fileName = (typeof (req.files.image) !== "undefined") ? req.files.image.name : "";
-
-        isImg(fileName);
-    }).withMessage("Please provide image file format.")
 ], (req, res) => {
-    // Validate Form for errors
+
+    // Error array to be passed to Flash Message Middleware
+    let errorArray = [];
+
+    // Validate errors using express-validator
     const errors = validationResult(req);
 
-    //     //Contains Errors
-    //     let errorArray = [];
 
-    //     // Check for errors from Form validation
-    //     errors.array().forEach((error) => {
-    //         errorArray.push(String(error.msg));
-    //     })
+    // Push errors from express-validator to Error-array
+    errors.array().forEach((error) => {
+        errorArray.push(String(error.msg));
+    })
 
-    //     Category.findOne({
-    //         title: req.body.title
-    //     }, (err, foundCategory) => {
-    //         if (errorArray.length === 0) {
-    //             if (!err) {
-    //                 if (!foundCategory) {
-    //                     slugVal = req.body.title
-    //                     let newCategory = new Category({
-    //                         title: req.body.title,
-    //                         slug: slugVal,
-    //                     });
-    //                     newCategory.save();
-    //                     errorArray.push('Successfully added category.')
-    //                     setLocalsMsg('success', errorArray);
-    //                     res.redirect('/admin/categories/add-category');
-    //                 } else {
-    //                     errorArray.push("Category Title Already exists. Try again.");
-    //                     setLocalsMsg('danger', errorArray)
-    //                     res.redirect('/admin/categories/add-category');
-    //                 }
-    //             } else {
-    //                 console.log(err);
-    //             }
-    //         } else {
-    //             setLocalsMsg('danger', errorArray)
-    //             res.redirect('/admin/categories/add-category');
-    //         }
-    //     });
 
-    //     // Function that takes in 'success/danger' types for Bootstrap alert class,and errorArray to display errors/sucess message on said alert component
-    //     function setLocalsMsg(type, errorArray) {
-    //         req.session.message = {
-    //             type: type,
-    //             errorArray: errorArray
-    //         }
-    // }
+    // Validate image file uploaded if the user uploaded one, or if it is a image-format file
+    let imageFileName;
+    if (req.files === null) {
+        imageFileName = "";
+    } else {
+        imageFileName = req.files.image.name !== "undefined" ? req.files.image.name : "";
+        if (!isImg(imageFileName)) {
+            console.log(isImg(imageFileName));
+            errorArray.push(["Please provide valid image format."]);
+        }
+    }
+
+    console.log(errorArray.length);
+    // Check if errorArray has no content {1} error from express-validator and {2}from custom Image validator
+    if (errorArray.length > 0) {
+        req.session.message = {
+            type: 'danger',
+            errorArray: errorArray
+        }
+        res.redirect('/admin/products/add-product')
+    }
+    // PROCEED saving to database if no errors (form submission) was found
+    else {
+        const product = new Product({
+            name: req.body.name,
+            price: req.body.price,
+            description: req.body.description,
+            category: req.body.category,
+            image: imageFileName
+        });
+        product.save((err) => {
+            // if (err) return console.log(err);
+
+            mkdirp(`public/product_images/${product._id}/`).catch(err => {
+                return console.log(err);
+            }).then(() => {
+                mkdirp(`public/product_images/${product._id}/gallery`).catch(err => {
+                    return console.log(err);
+                })
+            }).then(() => {
+                mkdirp(`public/product_images/${product._id}/gallery/thumbs`).catch(err => {
+                    return console.log(err);
+                }).then(() => {
+
+                })
+            }).then(() => {
+                if (req.files && req.files.length > 0) {
+                    if (imageFileName !== "") {
+                        let fileImage = req.files.image;
+                        console.log(imageFileName);
+                        console.log(fileImage)
+                        console.log(__dirname);
+                        path = "public/product_images/" + product._id + "/" + fileImage.name;
+
+
+                        fileImage.mv(path, (err) => {
+                            if (err) {
+                                return console.log(err);
+                            }
+                        })
+                    }
+                }
+            })
+
+
+
+
+            req.session.message = {
+                type: 'success',
+                errorArray: ['Successfully added product.']
+            }
+            // Product has been saved, redirect to add-pages view
+            res.redirect('/admin/products/add-product');
+        });
+
+
+    }
 });
 
-// router.get('/edit-category/:categoryId', (req, res) => {
-//     Category.findById(req.params.categoryId, (err, foundCategory) => {
-//         if (!err) {
-//             if (foundCategory) {
-//                 res.render("admin/edit_category", {
-//                     category: foundCategory
-//                 });
-//             } else {
-//                 console.log("No Category found.");
-//             }
-//         } else {
-//             console.log(err);
-//         }
-//     })
-// })
+router.get('/edit-product/:productId', (req, res) => {
+    Product.findById(req.params.productId, (err, foundProduct) => {
+        if (!err) {
+            if (foundProduct) {
+                Category.find({}, (err, categories) => {
+                    if (err) return console.log(err)
+                    else {
+                        res.render("admin/edit_product", {
+                            product: foundProduct,
+                            categories: categories
+                        });
+                    }
+                })
+            } else {
+                console.log("Product not found.");
+            }
+        } else {
+            console.log(err);
+        }
+    })
+})
 
-// router.post('/edit-category/:categoryId', (req, res) => {
-//     Category.findOneAndUpdate({
-//         _id: req.params.categoryId
-//     }, {
-//         $set: {
-//             title: req.body.title,
-//             slug: req.body.title,
-//         }
-//     }, (err) => {
-//         if (!err) {
-//             req.session.message = {
-//                 type: 'success',
-//                 errorArray: ['Edit successful!']
-//             }
-//             res.redirect('/admin/categories');
-//         }
-//     });
-// })
+router.post('/edit-product/:productId', (req, res) => {
+    // Error array to be passed to Flash Message Middleware
+    let errorArray = [];
+
+    // Validate errors using express-validator
+    const errors = validationResult(req);
 
 
-// router.get('/delete-category/:categoryId', (req, res) => {
-//     Category.findByIdAndDelete(req.params.categoryId, (err) => {
-//         if (err) {
-//             return console.log(err);
-//         } else {
-//             req.session.message = {
-//                 type: 'success',
-//                 errorArray: ['Successfully deleted category.']
-//             }
-//             res.redirect('/admin/categories');
-//         }
-//     })
-// });
+    // Push errors from express-validator to Error-array
+    errors.array().forEach((error) => {
+        errorArray.push(String(error.msg));
+    })
 
 
-// _______________________ Custom Validator for checking if uploaded file is image _______________________
-function isImg(filename) {
-    var extension = (path.extname(filename)).toLowerCase();
+    // Validate image file uploaded if the user uploaded one, or if it is a image-format file
+    let imageFileName = product.image;
+
+    if (imageFileName !== req.files.image.name) {
+        // Do Nothing. person has selected same picture according to image name.
+    } else {
+        imageFileName = req.files.image.name !== "undefined" ? req.files.image.name : "";
+        if (!isImg(imageFileName)) {
+            console.log(isImg(imageFileName));
+            errorArray.push(["Please provide valid image format."]);
+        }
+    }
+
+    console.log(errorArray.length);
+    // Check if errorArray has no content {1} error from express-validator and {2}from custom Image validator
+    if (errorArray.length > 0) {
+        req.session.message = {
+            type: 'danger',
+            errorArray: errorArray
+        }
+        res.redirect(`/admin/products/edit-product/${product._id}`)
+    } else {
+        Category.findOneAndUpdate({
+            _id: req.params.categoryId
+        }, {
+            $set: {
+                name: req.body.title,
+                price: req.body.price,
+                description: req.body.title,
+                category: req.body.category,
+                image: imageFileName
+            }
+        }, (err) => {
+            if (!err) {
+
+                if (req.files && req.files.length > 0) {
+                    if (imageFileName !== "") {
+                        let fileImage = req.files.image;
+                        console.log(imageFileName);
+                        console.log(fileImage)
+                        console.log(__dirname);
+                        path = "public/product_images/" + product._id + "/" + fileImage.name;
+
+
+                        fileImage.mv(path, (err) => {
+                            if (err) {
+                                return console.log(err);
+                            } else {
+                                req.session.message = {
+                                    type: 'success',
+                                    errorArray: ['Edit successful!']
+                                }
+                                res.redirect('/admin/products');
+                            }
+                        })
+                    }
+                }
+            }
+        });
+    }
+})
+
+
+router.get('/delete-product/:productId', (req, res) => {
+    Product.findByIdAndDelete(req.params.productId, (err) => {
+        if (err) {
+            return console.log(err);
+        } else {
+            req.session.message = {
+                type: 'success',
+                errorArray: ['Successfully deleted product.']
+            }
+            res.redirect('/admin/products');
+        }
+    })
+});
+
+function isImg(imageFileName) {
+    var extension = imageFileName.split('.').pop();
+    console.log(extension);
     switch (extension) {
-        case '.jpg':
-            return '.jpg';
-        case '.jpeg':
-            return '.jpeg';
-        case '.png':
-            return '.png';
+        case 'jpg':
+            return 'jpg';
+        case 'jpeg':
+            return 'jpeg';
+        case 'png':
+            return 'png';
         default:
             return false;
     }
 }
+
+// Format numbers to display (thousands) format E.G 1,500 or 12,500.
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+
+
 module.exports = router;

@@ -23,6 +23,7 @@
 
 
 <table class="table table-striped">
+    <% if (productCount && productCount > 0) { %>
     <thead>
         <tr>
             <th scope="col">Name</th>
@@ -35,7 +36,6 @@
         </tr>
     </thead>
     <tbody>
-        <% if (productCount && productCount > 0) { %>
         <% products.forEach((product) => { %>
         <tr>
             <td class="align-middle"><%= product.name %></td>
@@ -43,14 +43,15 @@
             <td class="text-center align-middle"><img src="/images/no-img.png" alt="" border='0' height='100'
                     width='100'></td>
             <% } else { %>
-            <td class="text-center align-middle"><%= product.image %></td>
+            <td class="text-center align-middle"><img src="/product_images/<%= product._id %>/<%= product.image %>"
+                    alt="" border='0' height='100' width='100'></td>
             <% } %>
             <td class="text-center align-middle"><%= product.description %></td>
             <td class="text-center align-middle"><%= product.category %></td>
 
             <td class="text-center align-middle">₱ <%= parseFloat(product.price).toFixed(2) %></td>
             <td class="text-center align-middle"><a href="/admin/products/edit-product/<%= product._id %>">Edit</a></td>
-            <td class="text-center align-middle delete-page"><a
+            <td class="text-center align-middle delete-page delete-btn"><a
                     href="/admin/products/delete-product/<%= product._id %>">Delete</a></td>
         </tr>
         <% }) %>
@@ -59,7 +60,6 @@
         <% } %>
     </tbody>
 </table>
-
 
 
 <!-- _______________________ Import Footer _______________________-->

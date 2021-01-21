@@ -1,0 +1,79 @@
+<!-- _______________________ Import header _______________________-->
+<%- include ('../_layouts/adminheader') %>
+
+
+<div class="jumbotron jumbotron-fluid mt-4">
+    <h1 class="display-4">Edit Product</h1>
+</div>
+<hr>
+<a class="btn btn-primary btn-lg mt-4" href="/admin/products">Back to all products</a>
+<br><br>
+
+
+
+<!-- _________________________________ Edit Products Form ___________________________________________ -->
+
+<form method="post" action="/admin/products/edit-product/<%= product._id %>" encType="multipart/form-data">
+    <div class="mb-4">
+        <label for="name">Product Name:</label>
+        <input type="text" id="name" class="form-control" name="name" value="<%= product.name %>">
+    </div>
+
+    <div class="mb-4">
+        <label for="price">Price:</label>
+        <input type="number" id="price" class="form-control" name="price" value="<%= product.price %>" step="0.01">
+    </div>
+
+    <div class="mb-4">
+        <label for="description">Description:</label>
+        <input type="text" id="description" class="form-control" name="description" value="<%= product.description %>">
+    </div>
+
+    <div class="mb-4">
+        <label for="category">Category:</label>
+        <select class="form-control" name="category" id="category">
+            <% categories.forEach((category) => { %>
+            <option><%=category.title %></option>
+            <% }) %>
+        </select>
+    </div>
+
+    <div class="mb-4">
+        <label for="image">Replace Image:</label>
+        <input type="file" id="image-input" class="form-control" name="image">
+        <% if (product.image === "") { %>
+        <img src="/images/no-img.png" id="imgPreview" alt="" class="img-preview">
+        <% } else { %>
+        <img src="public/product_images/<%= product._id %>/<%= product.image %>" id="imgPreview" alt=""
+            class="img-preview">
+        <% } %>
+
+    </div>
+
+    <div class="mb-4">
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </div>
+</form>
+
+
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#imgPreview').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    }
+
+    $("#image-input").change(function () {
+        $("#imgPreview").show();
+        readURL(this);
+    });
+</script>
+
+<!-- _______________________ Import Footer _______________________-->
+<%- include ('../_layouts/adminfooter') %>

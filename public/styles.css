@@ -20,3 +20,9 @@
 .add-pages-error ul {
     margin: 0;
 }
+
+.img-preview {
+    max-width: 300px;
+    max-height: 300px;
+    padding-top: 25px;
+}

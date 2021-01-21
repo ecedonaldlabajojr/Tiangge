@@ -28,10 +28,15 @@
 
 <!-- _________________________________ Add Pages Form ___________________________________________ -->
 
-<form method="post" action="/admin/products/add-product" enctype="multipart/form-data">
+<form method="post" action="/admin/products/add-product" encType="multipart/form-data">
     <div class="mb-4">
         <label class="form-label" for="name">Product Name:</label>
         <input type="text" id="name" class="form-control" name="name" placeholder="Name">
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label" for="price">Price:</label>
+        <input type="number" id="price" class="form-control" name="price" placeholder="Price" step="0.01">
     </div>
 
     <div class="mb-4">
@@ -41,9 +46,9 @@
 
     <div class="mb-4">
         <label class="form-label" for="categories">Category:</label>
-        <select name="categories" id="categories" class="form-control">
+        <select name="category" id="category" class="form-control">
             <% categories.forEach((category) => { %>
-            <option value="<%=category._id %>"><%= category.title %></option>
+            <option value="<%=category.title %>"><%= category.title %></option>
             <% }); %>
         </select>
     </div>
@@ -53,14 +58,12 @@
         <input class="form-control" type="file" name="image" id="image-input">
     </div>
     <div class="mb-4" id="preview-div">
-        <img id="imgPreview" src="#" alt="img-preview" />
+        <img id="imgPreview" src="#" alt="img-preview" class="img-preview">
     </div>
 
     <div class="mb-4">
         <button class="btn btn-primary" type="submit">Submit</button>
     </div>
-
-
 
 </form>
 
