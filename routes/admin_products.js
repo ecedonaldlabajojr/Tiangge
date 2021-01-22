@@ -8,6 +8,7 @@ const mkdirp = require('mkdirp')
 const fse = require('fs-extra');
 const resizeImg = require('resize-img');
 const imgExtensionValidate = require('../util/img-extens-validate');
+const fs = require('fs');
 
 
 // ________________ Get Products Model ________________
@@ -17,7 +18,7 @@ const Product = require('../models/products');
 const Category = require('../models/categories');
 
 
-// ________________ Routes ________________
+// // ++++++++++++++++++++++++++++++++++++ GET REQUEST PRODUCTS VIEW ++++++++++++++++++++++++++++++++++++
 router.get('/', (req, res) => {
     let productCount;
     Product.count({}, (err, count) => {
@@ -36,7 +37,7 @@ router.get('/', (req, res) => {
     })
 });
 
-
+// // ++++++++++++++++++++++++++++++++++++ GET REQUEST ADD PRODUCT ++++++++++++++++++++++++++++++++++++
 
 router.get('/add-product', (req, res) => {
     Category.find({}, (err, categories) => {
@@ -50,6 +51,8 @@ router.get('/add-product', (req, res) => {
     })
 })
 
+
+// ++++++++++++++++++++++++++++++++++++ POST REQUEST ADD PRODUCT ++++++++++++++++++++++++++++++++++++
 router.post('/add-product', [body('name').not().isEmpty().withMessage("Please provide a product name."),
     body('price').isFloat().withMessage("Please provide valid price."),
     body('description').not().isEmpty().withMessage("Please provide product description"),
@@ -114,7 +117,7 @@ router.post('/add-product', [body('name').not().isEmpty().withMessage("Please pr
 
                 })
             }).then(() => {
-                if (req.files && req.files.length > 0) {
+                if (req.files != null) {
                     if (imageFileName !== "") {
                         let fileImage = req.files.image;
                         console.log(imageFileName);
@@ -132,9 +135,6 @@ router.post('/add-product', [body('name').not().isEmpty().withMessage("Please pr
                 }
             })
 
-
-
-
             req.session.message = {
                 type: 'success',
                 errorArray: ['Successfully added product.']
@@ -147,6 +147,10 @@ router.post('/add-product', [body('name').not().isEmpty().withMessage("Please pr
     }
 });
 
+
+
+
+// // ++++++++++++++++++++++++++++++++++++ GET REQUEST EDIT PRODUCT ++++++++++++++++++++++++++++++++++++
 router.get('/edit-product/:productId', (req, res) => {
     Product.findById(req.params.productId, (err, foundProduct) => {
         if (!err) {
@@ -169,7 +173,14 @@ router.get('/edit-product/:productId', (req, res) => {
     })
 })
 
-router.post('/edit-product/:productId', (req, res) => {
+
+
+// // ++++++++++++++++++++++++++++++++++++ POST REQUEST EDIT PRODUCT ++++++++++++++++++++++++++++++++++++
+
+router.post('/edit-product/:productId', [body('name').not().isEmpty().withMessage("Please provide a product name."),
+    body('price').isFloat().withMessage("Please provide valid price."),
+    body('description').not().isEmpty().withMessage("Please provide product description"),
+], (req, res) => {
     // Error array to be passed to Flash Message Middleware
     let errorArray = [];
 
@@ -182,55 +193,70 @@ router.post('/edit-product/:productId', (req, res) => {
         errorArray.push(String(error.msg));
     })
 
-
-    // Validate image file uploaded if the user uploaded one, or if it is a image-format file
-    let imageFileName = product.image;
-
-    if (imageFileName !== req.files.image.name) {
-        // Do Nothing. person has selected same picture according to image name.
-    } else {
-        imageFileName = req.files.image.name !== "undefined" ? req.files.image.name : "";
-        if (!isImg(imageFileName)) {
-            console.log(isImg(imageFileName));
-            errorArray.push(["Please provide valid image format."]);
+    let imageFileName;
+    if (req.files != null) {
+        if (req.files.image.name !== undefined) {
+            imageFileName = req.files.image.name;
+            if (!isImg(imageFileName)) {
+                errorArray.push(['Please provide valid image format.']);
+            }
         }
+    } else {
+        imageFileName = "";
     }
 
-    console.log(errorArray.length);
     // Check if errorArray has no content {1} error from express-validator and {2}from custom Image validator
     if (errorArray.length > 0) {
         req.session.message = {
             type: 'danger',
             errorArray: errorArray
         }
-        res.redirect(`/admin/products/edit-product/${product._id}`)
+        res.redirect(`/admin/products/edit-product/${req.params.productId}`)
     } else {
-        Category.findOneAndUpdate({
-            _id: req.params.categoryId
-        }, {
-            $set: {
-                name: req.body.title,
-                price: req.body.price,
-                description: req.body.title,
-                category: req.body.category,
-                image: imageFileName
-            }
-        }, (err) => {
+
+        Product.findOne({
+            _id: req.params.productId
+        }, (err, foundProduct) => {
+            console.log(foundProduct);
             if (!err) {
-
-                if (req.files && req.files.length > 0) {
-                    if (imageFileName !== "") {
-                        let fileImage = req.files.image;
-                        console.log(imageFileName);
-                        console.log(fileImage)
-                        console.log(__dirname);
-                        path = "public/product_images/" + product._id + "/" + fileImage.name;
+                foundProduct.name = req.body.name;
+                foundProduct.price = req.body.price;
+                foundProduct.description = req.body.description;
+                foundProduct.category = req.body.category;
 
 
+                if (imageFileName !== "") {
+                    let fileImage = req.files.image;
+                    path = "public/product_images/" + foundProduct._id + "/" + fileImage.name;
+
+                    if (foundProduct.image !== "") {
+                        fs.unlink(`public/product_images/${foundProduct._id}/${foundProduct.image}`, (err) => {
+                            if (!err) {
+                                fileImage.mv(path, (err) => {
+                                    if (err) {
+                                        return console.log(err);
+                                    } else {
+                                        req.session.message = {
+                                            type: 'success',
+                                            errorArray: ['Edit successful!']
+                                        }
+                                        foundProduct.image = imageFileName;
+                                        foundProduct.save();
+                                        console.log(imageFileName);
+                                        res.redirect('/admin/products');
+                                    }
+                                })
+                            } else console.log(err);
+                        })
+
+
+                    } else {
                         fileImage.mv(path, (err) => {
                             if (err) {
                                 return console.log(err);
                             } else {
+                                foundProduct.image = imageFileName;
+                                foundProduct.save();
                                 req.session.message = {
                                     type: 'success',
                                     errorArray: ['Edit successful!']
@@ -239,24 +265,44 @@ router.post('/edit-product/:productId', (req, res) => {
                             }
                         })
                     }
+                } else {
+                    foundProduct.save();
+                    req.session.message = {
+                        type: 'success',
+                        errorArray: ['Edit successful!']
+                    }
+                    res.redirect('/admin/products');
                 }
+
+
+
+
+
             }
-        });
+
+        })
     }
 })
 
 
+
+// // ++++++++++++++++++++++++++++++++++++ GET REQUEST DELETE PRODUCT ++++++++++++++++++++++++++++++++++++
 router.get('/delete-product/:productId', (req, res) => {
     Product.findByIdAndDelete(req.params.productId, (err) => {
         if (err) {
             return console.log(err);
-        } else {
-            req.session.message = {
-                type: 'success',
-                errorArray: ['Successfully deleted product.']
-            }
-            res.redirect('/admin/products');
         }
+        // else {
+        // fs.unlink(`public/product_images/${req.params.productId}`, err => {
+        //     if (!err) {
+        req.session.message = {
+            type: 'success',
+            errorArray: ['Successfully deleted product.']
+        }
+        res.redirect('/admin/products');
+        // } else console.log(err);
+        // })
+        // }
     })
 });
 
