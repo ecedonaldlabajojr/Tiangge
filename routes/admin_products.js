@@ -9,6 +9,7 @@ const fse = require('fs-extra');
 const resizeImg = require('resize-img');
 const imgExtensionValidate = require('../util/img-extens-validate');
 const fs = require('fs');
+const rimraf = require('rimraf');
 
 
 // ________________ Get Products Model ________________
@@ -291,18 +292,20 @@ router.get('/delete-product/:productId', (req, res) => {
     Product.findByIdAndDelete(req.params.productId, (err) => {
         if (err) {
             return console.log(err);
+        } else {
+            // fs.unlink(`public/product_images/${req.params.productId}`, err => {
+            // if (!err) {
+            rimraf(`public/product_images/${req.params.productId}`, () => {
+                console.log("Finished deleting");
+            })
+            req.session.message = {
+                type: 'success',
+                errorArray: ['Successfully deleted product.']
+            }
+            res.redirect('/admin/products');
+            // } else console.log(err);
+            // })
         }
-        // else {
-        // fs.unlink(`public/product_images/${req.params.productId}`, err => {
-        //     if (!err) {
-        req.session.message = {
-            type: 'success',
-            errorArray: ['Successfully deleted product.']
-        }
-        res.redirect('/admin/products');
-        // } else console.log(err);
-        // })
-        // }
     })
 });
 
@@ -325,6 +328,23 @@ function isImg(imageFileName) {
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+
+
+// Delete folder non-empty
+var deleteFolderRecursive = function (path) {
+    if (fs.existsSync(path)) {
+        fs.readdirSync(path).forEach(function (file) {
+            var curPath = path + "/" + file;
+            if (fs.lstatSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath);
+            }
+        });
+        fs.rmdirSync(path);
+    }
+};
 
 
 
