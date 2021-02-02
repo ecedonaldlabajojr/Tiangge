@@ -1,8 +1,6 @@
 <!-- _______________________ Import header _______________________-->
 <%- include ('../_layouts/adminheader') %>
 
-
-
 <div class="jumbotron jumbotron-fluid mt-4">
     <h1 class="display-4">Pages</h1>
 </div>
@@ -36,7 +34,8 @@
             <% if (page.slug === "Home") { %>
             <td></td>
             <% } else { %>
-            <td class="text-center delete-page"><a href="/admin/pages/delete-page/<%= page._id %>">Delete</a></td>
+            <td class="text-center delete-page  delete-page delete-btn"><a
+                    href="/admin/pages/delete-page/<%= page._id %>">Delete</a></td>
             <% } %>
         </tr>
         <% }) %>
