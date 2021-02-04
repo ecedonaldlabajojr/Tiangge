@@ -26,3 +26,17 @@
     max-height: 300px;
     padding-top: 25px;
 }
+
+.product-img {
+    width: 150px;
+}
+
+.img-link {
+    display: block;
+    height: 200px;
+}
+
+.product-box {
+    margin-top: 40px;
+    margin-bottom: 30px;
+}

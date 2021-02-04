@@ -1,26 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
-
-
 // Import Page Schema
 const Page = require('../models/page');
 
 
-router.get('/', (rqq, res) => {
-    Page.find({}, (err, foundPages) => {
-        if (!err) {
+
+// Page Root Route Handler
+router.get('/', (req, res) => {
+    Page.findOne({
+        slug: 'Home'
+    }, (err, foundPage) => {
+        if (err) {
+            console.log(err);
+        };
+
+        res.render('index', {
+            title: foundPage.title,
+            content: foundPage.content
+        });
+    })
+});
+
+
+// Custom Pages Route Handler using Page slug
+router.get('/:slug', (req, res) => {
+    Page.findOne({
+        slug: req.params.slug
+    }, (err, foundPage) => {
+        if (err) {
+            console.log(err);
+            res.redirect('/');
+        }
+
+        if (foundPage) {
             res.render('index', {
-                pages: foundPages
+                title: foundPage.title,
+                content: foundPage.content
             })
         } else {
-            console.log(err);
+            res.redirect('/');
         }
     })
-    // res.render("index", {
-    //     title: "HOME",
-    //     content: "Pages"
-    // });
-});
+})
 
 module.exports = router;

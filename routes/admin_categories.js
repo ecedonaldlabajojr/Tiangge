@@ -50,6 +50,17 @@ router.post('/add-category', [
                         title: req.body.title,
                         slug: slugVal,
                     });
+
+                    // Update header.ejs Categories
+
+                    Category.find({}, (err, foundCategories) => {
+                        if (err) {
+                            console.log(err)
+                        } else {
+                            req.app.locals.categories = foundCategories;
+                        }
+                    })
+
                     newCategory.save();
                     errorArray.push('Successfully added category.')
                     setLocalsMsg('success', errorArray);
@@ -103,6 +114,15 @@ router.post('/edit-category/:categoryId', (req, res) => {
         }
     }, (err) => {
         if (!err) {
+            // Update header.ejs Categories
+
+            Category.find({}, (err, foundCategories) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    req.app.locals.categories = foundCategories;
+                }
+            })
             req.session.message = {
                 type: 'success',
                 errorArray: ['Edit successful!']
@@ -118,6 +138,17 @@ router.get('/delete-category/:categoryId', (req, res) => {
         if (err) {
             return console.log(err);
         } else {
+
+            // Update header.ejs Categories
+
+            Category.find({}, (err, foundCategories) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    req.app.locals.categories = foundCategories;
+                }
+            })
+
             req.session.message = {
                 type: 'success',
                 errorArray: ['Successfully deleted category.']

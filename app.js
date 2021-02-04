@@ -50,11 +50,45 @@ const pages = require('./routes/pages');
 const adminPages = require('./routes/admin_pages');
 const adminCategories = require('./routes/admin_categories');
 const adminProducts = require('./routes/admin_products');
+const products = require('./routes/products');
 
+app.use('/products', products);
 app.use('/', pages);
 app.use('/admin/pages', adminPages);
 app.use('/admin/categories', adminCategories);
 app.use('/admin/products', adminProducts);
+
+
+// Handle non-existing routes
+app.get('*', (req, res, next) => {
+    let err = new Error('Page not found.');
+    err.statusCode = 404;
+    err.shouldRedirect = true;
+    next(err);
+});
+
+
+// Update header.ejs Pages
+const Page = require('./models/page');
+
+Page.find({}, (err, foundPages) => {
+    if (err) {
+        console.log(err)
+    } else {
+        app.locals.pages = foundPages;
+    }
+})
+
+// Update header.ejs Categories
+const Category = require('./models/categories');
+
+Category.find({}, (err, foundCategories) => {
+    if (err) {
+        console.log(err)
+    } else {
+        app.locals.categories = foundCategories;
+    }
+})
 
 
 
@@ -90,6 +124,21 @@ const Item = new mongoose.model("Item", itemSchema);
 
 
 
+
+// Error Handler Middleware
+app.use((err, req, res, next) => {
+    console.log(err.message);
+    if (!err.statusCode) {
+        err.statusCode = 500; // Internal Server error;
+    }
+
+    if (err.shouldRedirect) {
+        res.render('error_page');
+    }
+    // else {
+    //     res.status(err.statusCode).send(err.message);
+    // }
+})
 
 const port = 3000;
 app.listen(config.PORT || port, () => {

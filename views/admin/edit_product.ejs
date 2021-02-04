@@ -50,7 +50,7 @@
         </select>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-1">
         <label for="image">Replace Image:</label>
         <input type="file" id="image-input" class="form-control" name="image">
         <% if (product.image === "") { %>
@@ -62,11 +62,15 @@
 
     </div>
 
-    <div class="mb-4">
+    <div class="mb-5">
         <input type="hidden" name="productImage" value="<%= product.image %>">
         <button class="btn btn-primary" type="submit">Submit</button>
     </div>
 </form>
+<h2 class="page-header display-6 mb-3">Upload gallery images</h2>
+<div class="container">
+    <form action="/upload-target" class="dropzone"></form>
+</div>
 
 
 <script>
@@ -87,6 +91,5 @@
         readURL(this);
     });
 </script>
-
 <!-- _______________________ Import Footer _______________________-->
 <%- include ('../_layouts/adminfooter') %>

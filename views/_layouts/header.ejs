@@ -27,10 +27,10 @@
 
             <div class="collapse navbar-collapse" id="navbarsExampleDefault">
                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                    <a class="nav-item nav-link active" href="/">Home</a>
+                    <a class="nav-item nav-link active mx-2" href="/">Home</a>
                     <% pages.forEach(page => { %>
-                    <% if (page.title !== "Home") { %>
-                    <a class="nav-item nav-link" href="/pages:<%= page.slug %>"><%= page.title %></a>
+                    <% if (page.slug !== "Home") { %>
+                    <a class="nav-item nav-link mx-2" href="/<%= page.slug %>"><%= page.title %></a>
                     <% } %>
                     <% }); %>
                 </ul>
@@ -42,3 +42,15 @@
         </div>
     </nav>
     <div class="container">
+        <div class="row mt-5">
+            <div class="col-xs-12 col-md-3">
+                <h3>Categories</h3>
+                <ul class="list-group">
+                    <li class="list-group-item"><a href="/products">All Products</a></li>
+                    <% categories.forEach(category => { %>
+                    <li class="list-group-item"><a href="/products/<%= category.slug %>"><%= category.title %></a></li>
+                    <% }) %>
+                </ul>
+            </div>
+            <div class="col-xs-12 col-md-1"></div>
+            <div class="col-xs-12 col-md-8">
