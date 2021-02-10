@@ -8,7 +8,7 @@ const mkdirp = require('mkdirp')
 const fse = require('fs-extra');
 const resizeImg = require('resize-img');
 const imgExtensionValidate = require('../util/img-extens-validate');
-const fs = require('fs');
+const fs = require('fs-extra');
 const rimraf = require('rimraf');
 
 
@@ -153,15 +153,21 @@ router.post('/add-product', [body('name').not().isEmpty().withMessage("Please pr
 
 // // ++++++++++++++++++++++++++++++++++++ GET REQUEST EDIT PRODUCT ++++++++++++++++++++++++++++++++++++
 router.get('/edit-product/:productId', (req, res) => {
+    let imageGallery = [];
     Product.findById(req.params.productId, (err, foundProduct) => {
         if (!err) {
             if (foundProduct) {
                 Category.find({}, (err, categories) => {
                     if (err) return console.log(err)
                     else {
+                        let path = `public/product_images/${req.params.productId}/gallery/thumbs`
+                        fs.readdirSync(path).forEach((file) => {
+                            imageGallery.push(file);
+                        })
                         res.render("admin/edit_product", {
                             product: foundProduct,
-                            categories: categories
+                            categories: categories,
+                            imageGallery: imageGallery
                         });
                     }
                 })
@@ -174,6 +180,44 @@ router.get('/edit-product/:productId', (req, res) => {
     })
 })
 
+router.post('/product-gallery/:productId', (req, res) => {
+    let productImage = req.files.file;
+    let productId = req.params.productId;
+    let path = `public/product_images/${productId}/gallery/${productImage.name}`;
+    let thumbPath = `public/product_images/${productId}/gallery/thumbs/${productImage.name}`;
+
+    productImage.mv(path, (err) => {
+        if (err) console.log(err);
+
+        resizeImg(fs.readFileSync(path), {
+            width: 100,
+            height: 100
+        }).then((resizedImg) => {
+            fs.writeFileSync(thumbPath, resizedImg);
+        })
+        res.sendStatus(200);
+    })
+})
+
+
+router.get('/delete-gallery/:productId/:imageName', (req, res) => {
+    let product_id = req.params.productId;
+    let image_name = req.params.imageName;
+    let path = `public/product_images/${product_id}/gallery/thumbs/${image_name}`
+    // fs.unlinkSync(path, (err) => {
+    //     console.log('unlink triggered');
+    //     if (err) console.log(err);
+    //     else {
+    //         res.redirect('/edit-product/:productId');
+    //     }
+    // });
+    fs.unlink(path, (err) => {
+        if (err) console.log(err);
+        else {
+            res.redirect('back');
+        }
+    });
+})
 
 
 // // ++++++++++++++++++++++++++++++++++++ POST REQUEST EDIT PRODUCT ++++++++++++++++++++++++++++++++++++
@@ -345,7 +389,5 @@ var deleteFolderRecursive = function (path) {
         fs.rmdirSync(path);
     }
 };
-
-
 
 module.exports = router;

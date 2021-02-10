@@ -68,9 +68,25 @@
     </div>
 </form>
 <h2 class="page-header display-6 mb-3">Upload gallery images</h2>
-<div class="container">
-    <form action="/upload-target" class="dropzone"></form>
-</div>
+
+
+<% if (imageGallery.length > 0) { %>
+<ul>
+    <% imageGallery.forEach((image) => { %>
+    <li class="my-4"><img style="width: 100px; height: 100px; margin-right: 20px"
+            src="/product_images/<%= product._id %>/gallery/thumbs/<%= image %>" alt=""><a class="delete-btn"
+            href="/admin/products/delete-gallery/<%= product._id %>/<%= image %>">Delete</a>
+    </li>
+    <% }) %>
+</ul>
+<% } %>
+<!-- Upload Images on Gallery -->
+<form action="/admin/products/product-gallery/<%= product._id %>" class="dropzone" method="POST" id="dropzone"
+    style="margin: 50px 0px">
+    <div class="fallback">
+        <input name="file" type="file" multiple />
+    </div>
+</form>
 
 
 <script>
@@ -90,6 +106,18 @@
         $("#imgPreview").show();
         readURL(this);
     });
+
+
+    Dropzone.options.dropzone = {
+        acceptedFiles: "image/*",
+        init: function () {
+            this.on("queuecomplete", function (file) {
+                setTimeout(() => {
+                    location.reload();
+                }, 2000)
+            });
+        }
+    };
 </script>
 <!-- _______________________ Import Footer _______________________-->
 <%- include ('../_layouts/adminfooter') %>
